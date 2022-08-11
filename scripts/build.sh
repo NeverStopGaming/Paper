@@ -1,0 +1,1 @@
+./gradlew applyPatches && ./gradlew createReobfPaperclipJar
