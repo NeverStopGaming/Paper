@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Mon, 21 Jun 2021 21:55:23 -0400
+Subject: [PATCH] Update head rotation in missing places
+
+In certain areas the player's head rotation could be desynced when teleported/moved.
+This is because bukkit uses a separate head rotation field for yaw.
+This issue only applies to players.
+
+diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
+index 95f9fe6d958b9bdd1e544120a8a7165b44aaa2a8..dff601f09007b15ea1fd6a12412c5153613546dc 100644
+--- a/src/main/java/net/minecraft/world/entity/Entity.java
++++ b/src/main/java/net/minecraft/world/entity/Entity.java
+@@ -1765,6 +1765,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+         this.setXRot(Mth.clamp(pitch, -90.0F, 90.0F) % 360.0F);
+         this.yRotO = this.getYRot();
+         this.xRotO = this.getXRot();
++        this.setYHeadRot(yaw); // Paper - Update head rotation
+     }
+ 
+     public void absMoveTo(double x, double y, double z) {
+@@ -1803,6 +1804,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+         this.setXRot(pitch);
+         this.setOldPosAndRot();
+         this.reapplyPosition();
++        this.setYHeadRot(yaw); // Paper - Update head rotation
+     }
+ 
+     public final void setOldPosAndRot() {

@@ -5,7 +5,7 @@ Subject: [PATCH] Rewrite chunk system
 
 
 diff --git a/src/main/java/ca/spottedleaf/starlight/common/light/StarLightInterface.java b/src/main/java/ca/spottedleaf/starlight/common/light/StarLightInterface.java
-index ef8dcbb6bbc0769e9ccfdadb05e6a46c070eda98..f6dfaaa0ccd8caeb4bd4b94254aebe7e96732f12 100644
+index 9a5fa60cb8156fe254a123e237d957ccb82f7195..0f7d36933e34e1d1b9dd27d8b0c35ff883818526 100644
 --- a/src/main/java/ca/spottedleaf/starlight/common/light/StarLightInterface.java
 +++ b/src/main/java/ca/spottedleaf/starlight/common/light/StarLightInterface.java
 @@ -41,14 +41,14 @@ public final class StarLightInterface {
@@ -2437,7 +2437,7 @@ index 0000000000000000000000000000000000000000..dd501e83d991e45598509134fab05baf
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/entity/EntityLookup.java b/src/main/java/io/papermc/paper/chunk/system/entity/EntityLookup.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..969f43ffc2e28aac45d1145d35ab37c8740b0880
+index 0000000000000000000000000000000000000000..7d37b2b02dd64acdac7e5981bebcf988e2f5a7c1
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/entity/EntityLookup.java
 @@ -0,0 +1,839 @@
@@ -2480,7 +2480,7 @@ index 0000000000000000000000000000000000000000..969f43ffc2e28aac45d1145d35ab37c8
 +
 +public final class EntityLookup implements LevelEntityGetter<Entity> {
 +
-+    private static final Logger LOGGER = LogUtils.getLogger();
++    private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +    protected static final int REGION_SHIFT = 5;
 +    protected static final int REGION_MASK = (1 << REGION_SHIFT) - 1;
@@ -2805,11 +2805,11 @@ index 0000000000000000000000000000000000000000..969f43ffc2e28aac45d1145d35ab37c8
 +        this.entityByLock.writeLock();
 +        try {
 +            if (this.entityById.containsKey(entity.getId())) {
-+                LOGGER.warn("Entity id already exists: " + entity.getId() + ", mapped to " + this.entityById.get(entity.getId()) + ", can't add " + entity, new Throwable());
++                LOGGER.warn("Entity id already exists: " + entity.getId() + ", mapped to " + this.entityById.get(entity.getId()) + ", can't add " + entity);
 +                return false;
 +            }
 +            if (this.entityByUUID.containsKey(entity.getUUID())) {
-+                LOGGER.warn("Entity uuid already exists: " + entity.getUUID() + ", mapped to " + this.entityByUUID.get(entity.getUUID()) + ", can't add " + entity, new Throwable());
++                LOGGER.warn("Entity uuid already exists: " + entity.getUUID() + ", mapped to " + this.entityByUUID.get(entity.getUUID()) + ", can't add " + entity);
 +                return false;
 +            }
 +            this.entityById.put(entity.getId(), entity);
@@ -3282,7 +3282,7 @@ index 0000000000000000000000000000000000000000..969f43ffc2e28aac45d1145d35ab37c8
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/io/RegionFileIOThread.java b/src/main/java/io/papermc/paper/chunk/system/io/RegionFileIOThread.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..de137486f610e9042853512f630b9dcc74b29280
+index 0000000000000000000000000000000000000000..a08cde4eefe879adcee7c4118bc38f98c5097ed0
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/io/RegionFileIOThread.java
 @@ -0,0 +1,1328 @@
@@ -3330,7 +3330,7 @@ index 0000000000000000000000000000000000000000..de137486f610e9042853512f630b9dcc
 + */
 +public final class RegionFileIOThread extends PrioritisedQueueExecutorThread {
 +
-+    private static final Logger LOGGER = LogUtils.getLogger();
++    private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +    /**
 +     * The kinds of region files controlled by the region file thread. Add more when needed, and ensure
@@ -4307,7 +4307,7 @@ index 0000000000000000000000000000000000000000..de137486f610e9042853512f630b9dcc
 +
 +    static final class InProgressRead {
 +
-+        private static final Logger LOGGER = LogUtils.getLogger();
++        private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +        CompoundTag value;
 +        Throwable throwable;
@@ -4449,7 +4449,7 @@ index 0000000000000000000000000000000000000000..de137486f610e9042853512f630b9dcc
 +
 +        protected static final CompoundTag NOTHING_TO_WRITE = new CompoundTag();
 +
-+        private static final Logger LOGGER = LogUtils.getLogger();
++        private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +        RegionFileIOThread.InProgressRead inProgressRead;
 +        volatile CompoundTag inProgressWrite = NOTHING_TO_WRITE; // only needs to be acquire/release
@@ -4902,10 +4902,10 @@ index 0000000000000000000000000000000000000000..0b7a2b0ead4f3bc07bfd9a38c2b7cf02
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/poi/PoiChunk.java b/src/main/java/io/papermc/paper/chunk/system/poi/PoiChunk.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b1bdd79044c00635c836dbed327526136ca4bd4e
+index 0000000000000000000000000000000000000000..dc298e61e2d479801c8469b2067a8f8bcb076b1d
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/poi/PoiChunk.java
-@@ -0,0 +1,211 @@
+@@ -0,0 +1,213 @@
 +package io.papermc.paper.chunk.system.poi;
 +
 +import com.mojang.logging.LogUtils;
@@ -4928,7 +4928,7 @@ index 0000000000000000000000000000000000000000..b1bdd79044c00635c836dbed32752613
 +
 +public final class PoiChunk {
 +
-+    private static final Logger LOGGER = LogUtils.getLogger();
++    private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +    public final ServerLevel world;
 +    public final int chunkX;
@@ -5114,20 +5114,21 @@ index 0000000000000000000000000000000000000000..b1bdd79044c00635c836dbed32752613
 +            ret.sections[sectionY - ret.minSection] = deserialized;
 +        }
 +
++        ret.loaded = !readAnything; // Set loaded to false if we read anything to ensure proper callbacks to PoiManager are made on #load
++
 +        return ret;
 +    }
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkFullTask.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkFullTask.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b02619d7111c52d1b4e3b50267e54da31d6161e3
+index 0000000000000000000000000000000000000000..fb42d776f15f735fb59e972e00e2b512c23a8387
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkFullTask.java
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,121 @@
 +package io.papermc.paper.chunk.system.scheduling;
 +
 +import ca.spottedleaf.concurrentutil.executor.standard.PrioritisedExecutor;
 +import ca.spottedleaf.concurrentutil.util.ConcurrentUtil;
-+import com.mojang.logging.LogUtils;
 +import net.minecraft.server.level.ChunkMap;
 +import net.minecraft.server.level.ServerLevel;
 +import net.minecraft.world.level.chunk.ChunkAccess;
@@ -5135,12 +5136,9 @@ index 0000000000000000000000000000000000000000..b02619d7111c52d1b4e3b50267e54da3
 +import net.minecraft.world.level.chunk.ImposterProtoChunk;
 +import net.minecraft.world.level.chunk.LevelChunk;
 +import net.minecraft.world.level.chunk.ProtoChunk;
-+import org.slf4j.Logger;
 +import java.lang.invoke.VarHandle;
 +
 +public final class ChunkFullTask extends ChunkProgressionTask implements Runnable {
-+
-+    private static final Logger LOGGER = LogUtils.getLogger();
 +
 +    protected final NewChunkHolder chunkHolder;
 +    protected final ChunkAccess fromChunk;
@@ -5250,7 +5248,7 @@ index 0000000000000000000000000000000000000000..b02619d7111c52d1b4e3b50267e54da3
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkHolderManager.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkHolderManager.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a07d920d453c8687ed86d9f9449537c3eb18041e
+index 0000000000000000000000000000000000000000..d220507e1a432883d3092720e3634e8d1d961dbe
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkHolderManager.java
 @@ -0,0 +1,1190 @@
@@ -5311,7 +5309,7 @@ index 0000000000000000000000000000000000000000..a07d920d453c8687ed86d9f9449537c3
 +
 +public final class ChunkHolderManager {
 +
-+    private static final Logger LOGGER = LogUtils.getLogger();
++    private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +    public static final int FULL_LOADED_TICKET_LEVEL    = 33;
 +    public static final int BLOCK_TICKING_TICKET_LEVEL  = 32;
@@ -6633,7 +6631,7 @@ index 0000000000000000000000000000000000000000..53ddd7e9ac05e6a9eb809f329796e6d4
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkLoadTask.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkLoadTask.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..1e2b8e457aabba2a5d1fabfba22be2faa1d3f45d
+index 0000000000000000000000000000000000000000..2410210739420ca7b384633dd7560759f04743c7
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkLoadTask.java
 @@ -0,0 +1,499 @@
@@ -6668,7 +6666,7 @@ index 0000000000000000000000000000000000000000..1e2b8e457aabba2a5d1fabfba22be2fa
 +
 +public final class ChunkLoadTask extends ChunkProgressionTask {
 +
-+    private static final Logger LOGGER = LogUtils.getLogger();
++    private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +    private final NewChunkHolder chunkHolder;
 +    private final ChunkDataLoadTask loadTask;
@@ -7249,7 +7247,7 @@ index 0000000000000000000000000000000000000000..322675a470eacbf0e5452f4009c643f2
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkTaskScheduler.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkTaskScheduler.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2b4e3f31d7c31aa5a4a5a18ba9e1d8b3f232fd16
+index 0000000000000000000000000000000000000000..c43c62fb22a26e4e3f5df4001f1b3e65d3833833
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkTaskScheduler.java
 @@ -0,0 +1,780 @@
@@ -7294,7 +7292,7 @@ index 0000000000000000000000000000000000000000..2b4e3f31d7c31aa5a4a5a18ba9e1d8b3
 +
 +public final class ChunkTaskScheduler {
 +
-+    private static final Logger LOGGER = LogUtils.getLogger();
++    private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +    static int newChunkSystemIOThreads;
 +    static int newChunkSystemWorkerThreads;
@@ -8035,7 +8033,7 @@ index 0000000000000000000000000000000000000000..2b4e3f31d7c31aa5a4a5a18ba9e1d8b3
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkUpgradeGenericStatusTask.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkUpgradeGenericStatusTask.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e96ecf351a1952b4e23e9a352f32d326146380e7
+index 0000000000000000000000000000000000000000..73ce0909bd89244835a0d0f2030a25871461f1e0
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/ChunkUpgradeGenericStatusTask.java
 @@ -0,0 +1,209 @@
@@ -8060,7 +8058,7 @@ index 0000000000000000000000000000000000000000..e96ecf351a1952b4e23e9a352f32d326
 +
 +public final class ChunkUpgradeGenericStatusTask extends ChunkProgressionTask implements Runnable {
 +
-+    private static final Logger LOGGER = LogUtils.getLogger();
++    private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +    protected final ChunkAccess fromChunk;
 +    protected final ChunkStatus fromStatus;
@@ -8250,7 +8248,7 @@ index 0000000000000000000000000000000000000000..e96ecf351a1952b4e23e9a352f32d326
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/GenericDataLoadTask.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/GenericDataLoadTask.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..ffbfaef2a57f0f26d0143f3a8fcf937bee7e7398
+index 0000000000000000000000000000000000000000..396d72c00e47cf1669ae20dc839c1c961b1f262a
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/GenericDataLoadTask.java
 @@ -0,0 +1,746 @@
@@ -8274,7 +8272,7 @@ index 0000000000000000000000000000000000000000..ffbfaef2a57f0f26d0143f3a8fcf937b
 +
 +public abstract class GenericDataLoadTask<OnMain,FinalCompletion> {
 +
-+    private static final Logger LOGGER = LogUtils.getLogger();
++    private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +    protected static final CompoundTag CANCELLED_DATA = new CompoundTag();
 +
@@ -9002,7 +9000,7 @@ index 0000000000000000000000000000000000000000..ffbfaef2a57f0f26d0143f3a8fcf937b
 +}
 diff --git a/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java b/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9a4ec0f1fb3bac0e84e6bd3aaeb77f44e248aadb
+index 0000000000000000000000000000000000000000..dd9c1d68a2bc42467b4566953aaed028bddf0f74
 --- /dev/null
 +++ b/src/main/java/io/papermc/paper/chunk/system/scheduling/NewChunkHolder.java
 @@ -0,0 +1,2071 @@
@@ -9053,7 +9051,7 @@ index 0000000000000000000000000000000000000000..9a4ec0f1fb3bac0e84e6bd3aaeb77f44
 +
 +public final class NewChunkHolder {
 +
-+    private static final Logger LOGGER = LogUtils.getLogger();
++    private static final Logger LOGGER = LogUtils.getClassLogger();
 +
 +    public static final Thread.UncaughtExceptionHandler CHUNKSYSTEM_UNCAUGHT_EXCEPTION_HANDLER = new Thread.UncaughtExceptionHandler() {
 +        @Override
@@ -12893,7 +12891,7 @@ index c905602d23cdf3af1de7ab4419f11856b07da2ba..fa1ab9974859c75075f3090e36e0de58
      }
  
 diff --git a/src/main/java/net/minecraft/server/level/ChunkHolder.java b/src/main/java/net/minecraft/server/level/ChunkHolder.java
-index 86c33f029ae56fcace51b69763202be9f8bc5f44..b550f302b1bb6ef92987c8c3431b94c3ba3a091d 100644
+index 86c33f029ae56fcace51b69763202be9f8bc5f44..2ba3bb4e5670ece798a8882801a856d82851c00a 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkHolder.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkHolder.java
 @@ -50,17 +50,12 @@ public class ChunkHolder {
@@ -13150,7 +13148,7 @@ index 86c33f029ae56fcace51b69763202be9f8bc5f44..b550f302b1bb6ef92987c8c3431b94c3
  
                  if (chunk != null) {
                      int j = this.lightEngine.getMinLightSection();
-@@ -340,66 +305,34 @@ public class ChunkHolder {
+@@ -340,66 +305,32 @@ public class ChunkHolder {
      }
  
      public void broadcast(Packet<?> packet, boolean onlyOnWatchDistanceEdge) {
@@ -13180,14 +13178,12 @@ index 86c33f029ae56fcace51b69763202be9f8bc5f44..b550f302b1bb6ef92987c8c3431b94c3
 -                throw chunkStorage.debugFuturesAndCreateReportedException(new IllegalStateException("null value previously set for chunk status"), s);
 +        Object[] backingSet = players.getBackingSet();
 +        for (int i = 0, len = backingSet.length; i < len; ++i) {
-+            Object temp = backingSet[i];
-+            if (!(temp instanceof ServerPlayer)) {
++            if (!(backingSet[i] instanceof ServerPlayer player)) {
 +                continue;
              }
 -
 -            if (either == ChunkHolder.NOT_DONE_YET || either.right().isEmpty()) {
 -                return completablefuture;
-+            ServerPlayer player = (ServerPlayer)temp;
 +            if (!this.chunkMap.playerChunkManager.isChunkSent(player, this.pos.x, this.pos.z, onlyOnWatchDistanceEdge)) {
 +                continue;
              }
@@ -13237,7 +13233,7 @@ index 86c33f029ae56fcace51b69763202be9f8bc5f44..b550f302b1bb6ef92987c8c3431b94c3
      }
  
      public final ChunkPos getPos() { // Paper - final for inline
-@@ -407,207 +340,10 @@ public class ChunkHolder {
+@@ -407,207 +338,10 @@ public class ChunkHolder {
      }
  
      public final int getTicketLevel() { // Paper - final for inline
@@ -13447,7 +13443,7 @@ index 86c33f029ae56fcace51b69763202be9f8bc5f44..b550f302b1bb6ef92987c8c3431b94c3
  
      public static ChunkStatus getStatus(int level) {
          return level < 33 ? ChunkStatus.FULL : ChunkStatus.getStatusAroundFullChunk(level - 33);
-@@ -617,38 +353,14 @@ public class ChunkHolder {
+@@ -617,38 +351,14 @@ public class ChunkHolder {
          return ChunkHolder.FULL_CHUNK_STATUSES[Mth.clamp(33 - distance + 1, (int) 0, ChunkHolder.FULL_CHUNK_STATUSES.length - 1)];
      }
  
@@ -13489,7 +13485,7 @@ index 86c33f029ae56fcace51b69763202be9f8bc5f44..b550f302b1bb6ef92987c8c3431b94c3
      }
  
      @FunctionalInterface
-@@ -697,15 +409,15 @@ public class ChunkHolder {
+@@ -697,15 +407,15 @@ public class ChunkHolder {
  
      // Paper start
      public final boolean isEntityTickingReady() {
@@ -13509,7 +13505,7 @@ index 86c33f029ae56fcace51b69763202be9f8bc5f44..b550f302b1bb6ef92987c8c3431b94c3
      // Paper end
  }
 diff --git a/src/main/java/net/minecraft/server/level/ChunkMap.java b/src/main/java/net/minecraft/server/level/ChunkMap.java
-index cbd4e749574c55c6e52f42b62dd6da8cfcca97f9..eda47a2c2a26fcf3434af140e1436395b2506cb0 100644
+index cbd4e749574c55c6e52f42b62dd6da8cfcca97f9..13814643e28e36c72173d0d62b9271a7f6113f6a 100644
 --- a/src/main/java/net/minecraft/server/level/ChunkMap.java
 +++ b/src/main/java/net/minecraft/server/level/ChunkMap.java
 @@ -122,10 +122,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
@@ -14421,7 +14417,7 @@ index cbd4e749574c55c6e52f42b62dd6da8cfcca97f9..eda47a2c2a26fcf3434af140e1436395
          return sectionposition;
      }
  
-@@ -1307,65 +824,40 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1307,65 +824,38 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          int k1;
          int l1;
  
@@ -14475,29 +14471,26 @@ index cbd4e749574c55c6e52f42b62dd6da8cfcca97f9..eda47a2c2a26fcf3434af140e1436395
 -        Set<ServerPlayer> set = this.playerMap.getPlayers(chunkPos.toLong());
 -        Builder<ServerPlayer> builder = ImmutableList.builder();
 -        Iterator iterator = set.iterator();
--
--        while (iterator.hasNext()) {
--            ServerPlayer entityplayer = (ServerPlayer) iterator.next();
--            SectionPos sectionposition = entityplayer.getLastSectionPos();
 +        // Paper start - per player view distance
 +        // there can be potential desync with player's last mapped section and the view distance map, so use the
 +        // view distance map here.
-+        List<ServerPlayer> ret = new java.util.ArrayList<>(4);
-+
 +        com.destroystokyo.paper.util.misc.PooledLinkedHashSets.PooledObjectLinkedOpenHashSet<ServerPlayer> players = this.playerChunkManager.broadcastMap.getObjectsInRange(chunkPos);
 +        if (players == null) {
-+            return ret;
++            return java.util.Collections.emptyList();
 +        }
+ 
+-        while (iterator.hasNext()) {
+-            ServerPlayer entityplayer = (ServerPlayer) iterator.next();
+-            SectionPos sectionposition = entityplayer.getLastSectionPos();
++        List<ServerPlayer> ret = new java.util.ArrayList<>(players.size());
  
 -            if (onlyOnWatchDistanceEdge && ChunkMap.isChunkOnRangeBorder(chunkPos.x, chunkPos.z, sectionposition.x(), sectionposition.z(), this.viewDistance) || !onlyOnWatchDistanceEdge && ChunkMap.isChunkInRange(chunkPos.x, chunkPos.z, sectionposition.x(), sectionposition.z(), this.viewDistance)) {
 -                builder.add(entityplayer);
 +        Object[] backingSet = players.getBackingSet();
 +        for (int i = 0, len = backingSet.length; i < len; ++i) {
-+            Object temp = backingSet[i];
-+            if (!(temp instanceof ServerPlayer)) {
++            if (!(backingSet[i] instanceof ServerPlayer player)) {
 +                continue;
 +            }
-+            ServerPlayer player = (ServerPlayer)temp;
 +            if (!this.playerChunkManager.isChunkSent(player, chunkPos.x, chunkPos.z, onlyOnWatchDistanceEdge)) {
 +                continue;
              }
@@ -14510,7 +14503,7 @@ index cbd4e749574c55c6e52f42b62dd6da8cfcca97f9..eda47a2c2a26fcf3434af140e1436395
      }
  
      public void addEntity(Entity entity) {
-@@ -1560,7 +1052,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1560,7 +1050,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
  
          @Override
          protected boolean isChunkToRemove(long pos) {
@@ -14519,7 +14512,7 @@ index cbd4e749574c55c6e52f42b62dd6da8cfcca97f9..eda47a2c2a26fcf3434af140e1436395
          }
  
          @Nullable
-@@ -1641,7 +1133,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
+@@ -1641,7 +1131,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
              org.spigotmc.AsyncCatcher.catchOp("player tracker update"); // Spigot
              if (player != this.entity) {
                  Vec3 vec3d = player.position().subtract(this.entity.position());
@@ -15669,7 +15662,7 @@ index 99d44faab5b5da244fdc170c73d73723c174c8fd..7c709be5d43bcd45064c79e84d5b2fff
  
      private final class EntityCallbacks implements LevelCallback<Entity> {
 diff --git a/src/main/java/net/minecraft/server/level/ThreadedLevelLightEngine.java b/src/main/java/net/minecraft/server/level/ThreadedLevelLightEngine.java
-index 89f3380632b098aaf95d68a386bc7e72c8c27f5c..3a2e4d42a8509f8f5a0e2c34e1f6568fce82cd80 100644
+index 3fb8d2626a1ef097c05fa5810bc1e051b4a6ad44..63d1a121a97a8dbc9b640d21580b084898a232bf 100644
 --- a/src/main/java/net/minecraft/server/level/ThreadedLevelLightEngine.java
 +++ b/src/main/java/net/minecraft/server/level/ThreadedLevelLightEngine.java
 @@ -36,15 +36,14 @@ import net.minecraft.world.level.chunk.ChunkStatus;
@@ -15711,18 +15704,7 @@ index 89f3380632b098aaf95d68a386bc7e72c8c27f5c..3a2e4d42a8509f8f5a0e2c34e1f6568f
              this.theLightEngine.relightChunks(chunks, (ChunkPos chunkPos) -> {
                  chunkLightCallback.accept(chunkPos);
                  ((java.util.concurrent.Executor)((ServerLevel)this.theLightEngine.getWorld()).getChunkSource().mainThreadProcessor).execute(() -> {
-@@ -160,9 +158,7 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
-             for (int dz = -1; dz <= 1; ++dz) {
-                 ChunkHolder neighbour = world.getChunkSource().chunkMap.getUpdatingChunkIfPresent(CoordinateUtils.getChunkKey(dx + chunkX, dz + chunkZ));
-                 if (neighbour != null) {
--                    neighbour.chunkToSave = neighbour.chunkToSave.thenCombine(updateFuture, (final ChunkAccess curr, final Void ignore) -> {
--                        return curr;
--                    });
-+                    // Paper - rewrite chunk system - not needed, light ticket will keep these chunks loaded
-                 }
-             }
-         }
-@@ -283,17 +279,11 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
+@@ -269,17 +267,11 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
      }
  
      private void addTask(int x, int z, ThreadedLevelLightEngine.TaskType stage, Runnable task) {
@@ -15742,7 +15724,7 @@ index 89f3380632b098aaf95d68a386bc7e72c8c27f5c..3a2e4d42a8509f8f5a0e2c34e1f6568f
      }
  
      @Override
-@@ -351,74 +341,15 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
+@@ -337,74 +329,15 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
                  }
              });
          }
