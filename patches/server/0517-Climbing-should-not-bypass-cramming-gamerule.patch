@@ -5,10 +5,10 @@ Subject: [PATCH] Climbing should not bypass cramming gamerule
 
 
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index 742ff6a0585b1ac58bcbc15224a07f78838a9f1d..3f29f53c23055036f75926f263030ff91a2d9452 100644
+index 37eb939935dc5fbaa22f89f1784bd69c0c37cfcf..508eb07ac137ca81e4f9015fe2665d992bd1cb72 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -1898,6 +1898,12 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+@@ -1896,6 +1896,12 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
      }
  
      public boolean isPushable() {
