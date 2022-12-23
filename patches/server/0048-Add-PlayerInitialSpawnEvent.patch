@@ -8,11 +8,14 @@ For modifying a player's initial spawn location as they join the server
 This is a duplicate API from spigot, so use our duplicate subclass and
 improve setPosition to use raw
 
+== AT ==
+public net.minecraft.world.entity.Entity setRot(FF)V
+
 diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
-index 3235d6f98794709a53208e20ef33f2164725be48..dfb53366a0b36b6a4cc43c66837f98fc372c6d2e 100644
+index 5463b07b24a4572bd9e83b6694fa0162d4911f7b..ae492b5c184896864bb6cc7429dfd701d560ae06 100644
 --- a/src/main/java/net/minecraft/server/players/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/players/PlayerList.java
-@@ -223,7 +223,7 @@ public abstract class PlayerList {
+@@ -229,7 +229,7 @@ public abstract class PlayerList {
  
          // Spigot start - spawn location event
          Player spawnPlayer = player.getBukkitEntity();
@@ -21,7 +24,7 @@ index 3235d6f98794709a53208e20ef33f2164725be48..dfb53366a0b36b6a4cc43c66837f98fc
          this.cserver.getPluginManager().callEvent(ev);
  
          Location loc = ev.getSpawnLocation();
-@@ -231,7 +231,10 @@ public abstract class PlayerList {
+@@ -237,7 +237,10 @@ public abstract class PlayerList {
  
          player.spawnIn(worldserver1);
          player.gameMode.setLevel((ServerLevel) player.level);

@@ -10,11 +10,14 @@ I suspect Mojang may switch to this behavior before full release.
 
 To be converted into a Paper-API event at some point in the future?
 
+== AT ==
+public net.minecraft.world.entity.player.Player removeEntitiesOnShoulder()V
+
 diff --git a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-index 9df3561fca35b1649de1545e924bd96ec5f80089..f8955429ec4cfe778de77a7db5fef624c20e4318 100644
+index ad72e852e05c50effa195b112ff67b6d18a1eea2..ca894b92215f431a31b69ee2910ce023177f3e6e 100644
 --- a/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
 +++ b/src/main/java/net/minecraft/server/network/ServerGamePacketListenerImpl.java
-@@ -2464,6 +2464,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
+@@ -2327,6 +2327,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          switch (packet.getAction()) {
              case PRESS_SHIFT_KEY:
                  this.player.setShiftKeyDown(true);
@@ -29,10 +32,10 @@ index 9df3561fca35b1649de1545e924bd96ec5f80089..f8955429ec4cfe778de77a7db5fef624
              case RELEASE_SHIFT_KEY:
                  this.player.setShiftKeyDown(false);
 diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index 1e3ac1d2cb5adf4c0fa3b703f2ecdc32cd8ce240..07a8abb714a9dfd470ab0486c336e3b58ea927a1 100644
+index 379834a8b197a2f32aaebf4ebed635e7eba84479..a07ca7eca7ca38c47ae2c23f048c02a7869197aa 100644
 --- a/src/main/java/net/minecraft/world/entity/player/Player.java
 +++ b/src/main/java/net/minecraft/world/entity/player/Player.java
-@@ -588,7 +588,7 @@ public abstract class Player extends LivingEntity {
+@@ -583,7 +583,7 @@ public abstract class Player extends LivingEntity {
          this.playShoulderEntityAmbientSound(this.getShoulderEntityLeft());
          this.playShoulderEntityAmbientSound(this.getShoulderEntityRight());
          if (!this.level.isClientSide && (this.fallDistance > 0.5F || this.isInWater()) || this.abilities.flying || this.isSleeping() || this.isInPowderSnow) {

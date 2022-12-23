@@ -5,10 +5,10 @@ Subject: [PATCH] Expose attack cooldown methods for Player
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 58a1e433b0bd7c093c964a9dfcbb7287b5988af4..cea4285095979f0656821e897659c7b91d237e82 100644
+index e9c8148495dcea8c6ba143ee2d5bd0430a5c94dd..1ce6638a98acbfadcde649363d6703d050e377fe 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -2589,6 +2589,21 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -2653,6 +2653,21 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
  
          return this.adventure$pointers;
      }

@@ -10,6 +10,11 @@ can automatically replenish after a given time.
 This feature is good for long term worlds so that newer players
 do not suffer with "Every chest has been looted"
 
+== AT ==
+public org.bukkit.craftbukkit.block.CraftBlockEntityState getTileEntity()Lnet/minecraft/world/level/block/entity/BlockEntity;
+public org.bukkit.craftbukkit.block.CraftLootable setLootTable(Lorg/bukkit/loot/LootTable;J)V
+public org.bukkit.craftbukkit.entity.CraftMinecartContainer setLootTable(Lorg/bukkit/loot/LootTable;J)V
+
 diff --git a/src/main/java/com/destroystokyo/paper/loottable/PaperContainerEntityLootableInventory.java b/src/main/java/com/destroystokyo/paper/loottable/PaperContainerEntityLootableInventory.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..88e32ed64f90bfd277dac84ba4bd84f0d943f5f8
@@ -485,7 +490,7 @@ index 0000000000000000000000000000000000000000..9cfa5d36a6991067a3866e0d437749fa
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index dd5e9dc310f30c008f0c8c60ac4305160261bad9..a6b5527e97e8a5b2eeca762477a7b695223a0d4d 100644
+index c070fd1b224aeeaa9ebb054105a0f73285956da1..0c0060cdc35e0d8d3098a0ade8080f91dbc81a2b 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
 @@ -232,6 +232,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
@@ -537,7 +542,7 @@ index 9347faecdaa3ef8c375fe8b0a89fc3385b6823bd..b8fb7b5a347298ada16bc8b818edf186
      }
  
 diff --git a/src/main/java/net/minecraft/world/entity/vehicle/ChestBoat.java b/src/main/java/net/minecraft/world/entity/vehicle/ChestBoat.java
-index abb35b675fc075c1004a85cd8f0c6f65d290a809..ba14657c6911bfd54da6ee9e248b3a050455d68a 100644
+index e1c4289ff790c691fdae8f7653414a60eb196dc2..a9fb2d5e95d5caa71b794eda0f2749ff795ed4e7 100644
 --- a/src/main/java/net/minecraft/world/entity/vehicle/ChestBoat.java
 +++ b/src/main/java/net/minecraft/world/entity/vehicle/ChestBoat.java
 @@ -65,12 +65,14 @@ public class ChestBoat extends Boat implements HasCustomInventoryScreen, Contain
@@ -555,7 +560,7 @@ index abb35b675fc075c1004a85cd8f0c6f65d290a809..ba14657c6911bfd54da6ee9e248b3a05
          this.readChestVehicleSaveData(nbt);
      }
  
-@@ -223,6 +225,20 @@ public class ChestBoat extends Boat implements HasCustomInventoryScreen, Contain
+@@ -226,6 +228,20 @@ public class ChestBoat extends Boat implements HasCustomInventoryScreen, Contain
          this.itemStacks = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
      }
  
@@ -577,7 +582,7 @@ index abb35b675fc075c1004a85cd8f0c6f65d290a809..ba14657c6911bfd54da6ee9e248b3a05
      public List<HumanEntity> transaction = new java.util.ArrayList<HumanEntity>();
      private int maxStack = MAX_STACK;
 diff --git a/src/main/java/net/minecraft/world/entity/vehicle/ContainerEntity.java b/src/main/java/net/minecraft/world/entity/vehicle/ContainerEntity.java
-index e2a9782e0ae60eb5557dce0831084c5722687df6..9c15af9b622716ba8b21b8b1138ad1cd85430f96 100644
+index e2a9782e0ae60eb5557dce0831084c5722687df6..6ae9cccb28b2354ee47e6682082f92f3ecd56a67 100644
 --- a/src/main/java/net/minecraft/world/entity/vehicle/ContainerEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/vehicle/ContainerEntity.java
 @@ -61,7 +61,7 @@ public interface ContainerEntity extends Container, MenuProvider {
@@ -598,7 +603,25 @@ index e2a9782e0ae60eb5557dce0831084c5722687df6..9c15af9b622716ba8b21b8b1138ad1cd
              ContainerHelper.loadAllItems(nbt, this.getItemStacks());
          }
  
-@@ -184,4 +184,13 @@ public interface ContainerEntity extends Container, MenuProvider {
+@@ -104,13 +104,15 @@ public interface ContainerEntity extends Container, MenuProvider {
+ 
+     default void unpackChestVehicleLootTable(@Nullable Player player) {
+         MinecraftServer minecraftServer = this.getLevel().getServer();
+-        if (this.getLootTable() != null && minecraftServer != null) {
++        if (this.getLootableData().shouldReplenish(player) && minecraftServer != null) { // Paper
+             LootTable lootTable = minecraftServer.getLootTables().get(this.getLootTable());
+             if (player != null) {
+                 CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)player, this.getLootTable());
+             }
+ 
+-            this.setLootTable((ResourceLocation)null);
++            // this.setLootTable((ResourceLocation)null); // Paper
++            this.getLootableData().processRefill(player); // Paper
++
+             LootContext.Builder builder = (new LootContext.Builder((ServerLevel)this.getLevel())).withParameter(LootContextParams.ORIGIN, this.position()).withOptionalRandomSeed(this.getLootTableSeed());
+             if (player != null) {
+                 builder.withLuck(player.getLuck()).withParameter(LootContextParams.THIS_ENTITY, player);
+@@ -184,4 +186,13 @@ public interface ContainerEntity extends Container, MenuProvider {
      default boolean isChestVehicleStillValid(Player player) {
          return !this.isRemoved() && this.position().closerThan(player.position(), 8.0D);
      }
