@@ -5,10 +5,10 @@ Subject: [PATCH] Allow chests to be placed with NBT data
 
 
 diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
-index 504a56fb2f2901c67ed22b9f0a57eb8db10ca4df..7d1e41272d05a8cb8d1adbcd2e9bc00f1a6f95fe 100644
+index a598b6522ce4d41575f04425d189319fa12a7b70..57661672d02b19c864bb267c09b2fa433e716b7b 100644
 --- a/src/main/java/net/minecraft/world/item/ItemStack.java
 +++ b/src/main/java/net/minecraft/world/item/ItemStack.java
-@@ -368,6 +368,7 @@ public final class ItemStack {
+@@ -372,6 +372,7 @@ public final class ItemStack {
                      enuminteractionresult = InteractionResult.FAIL; // cancel placement
                      // PAIL: Remove this when MC-99075 fixed
                      placeEvent.getPlayer().updateInventory();

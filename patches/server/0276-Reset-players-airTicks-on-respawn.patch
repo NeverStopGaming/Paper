@@ -5,10 +5,10 @@ Subject: [PATCH] Reset players airTicks on respawn
 
 
 diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 572dc30729a4511dcc7002434017edf8b0ce5a89..15d4ad53cca71272e491bea31d83e8c8e697dac0 100644
+index 9f6531a2d20583355587dab1503573024a12144d..fbd470bb9fccf1f923c55f3b7906bc65aa34c01e 100644
 --- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
 +++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-@@ -2337,6 +2337,7 @@ public class ServerPlayer extends Player {
+@@ -2369,6 +2369,7 @@ public class ServerPlayer extends Player {
  
          this.setHealth(this.getMaxHealth());
          this.stopUsingItem(); // CraftBukkit - SPIGOT-6682: Clear active item on reset

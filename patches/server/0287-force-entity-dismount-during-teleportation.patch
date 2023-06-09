@@ -19,32 +19,11 @@ this is going to be the best soultion all around.
 
 Improvements/suggestions welcome!
 
-diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-index 15d4ad53cca71272e491bea31d83e8c8e697dac0..c7fe091d13349348b7288c0aa8bdde046dc47fa4 100644
---- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
-+++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
-@@ -1366,11 +1366,13 @@ public class ServerPlayer extends Player {
-         }
-     }
- 
--    @Override
--    public void stopRiding() {
-+    // Paper start
-+    @Override public void stopRiding() { stopRiding(false); }
-+    @Override public void stopRiding(boolean suppressCancellation) {
-+        // Paper end
-         Entity entity = this.getVehicle();
- 
--        super.stopRiding();
-+        super.stopRiding(suppressCancellation); // Paper
-         Entity entity1 = this.getVehicle();
- 
-         if (entity1 != entity && this.connection != null) {
 diff --git a/src/main/java/net/minecraft/world/entity/Entity.java b/src/main/java/net/minecraft/world/entity/Entity.java
-index b8257959acd2b38243fd259f367564080aff951e..d664b8691a8248a035cbe1b12a353f633980ea7b 100644
+index bb926384659194501bfdbed01b1f66d0909a592a..55658cdb2b5aca0bfebefc7fcec36aefe5f42e7b 100644
 --- a/src/main/java/net/minecraft/world/entity/Entity.java
 +++ b/src/main/java/net/minecraft/world/entity/Entity.java
-@@ -2396,11 +2396,16 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+@@ -2423,11 +2423,16 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
      }
  
      public void removeVehicle() {
@@ -62,7 +41,7 @@ index b8257959acd2b38243fd259f367564080aff951e..d664b8691a8248a035cbe1b12a353f63
          }
  
      }
-@@ -2467,7 +2472,10 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+@@ -2491,7 +2496,10 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
          return true; // CraftBukkit
      }
  
@@ -74,7 +53,7 @@ index b8257959acd2b38243fd259f367564080aff951e..d664b8691a8248a035cbe1b12a353f63
          if (entity.getVehicle() == this) {
              throw new IllegalStateException("Use x.stopRiding(y), not y.removePassenger(x)");
          } else {
-@@ -2477,7 +2485,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+@@ -2501,7 +2509,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
              if (this.getBukkitEntity() instanceof Vehicle && entity.getBukkitEntity() instanceof LivingEntity) {
                  VehicleExitEvent event = new VehicleExitEvent(
                          (Vehicle) this.getBukkitEntity(),
@@ -83,7 +62,7 @@ index b8257959acd2b38243fd259f367564080aff951e..d664b8691a8248a035cbe1b12a353f63
                  );
                  // Suppress during worldgen
                  if (this.valid) {
-@@ -2491,7 +2499,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+@@ -2515,7 +2523,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
              }
              // CraftBukkit end
              // Spigot start
@@ -93,10 +72,10 @@ index b8257959acd2b38243fd259f367564080aff951e..d664b8691a8248a035cbe1b12a353f63
              if (this.valid) {
                  Bukkit.getPluginManager().callEvent(event);
 diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-index 2c804ef89d910f706c449b4ce540ed1be3ac242a..3ff18ddb1d4b36fcfd97c9b29f2ecdcb4958916e 100644
+index 30abef77152b77b563b3da0df8e5bf5731999e53..406d495a410c23d43cf72444e8f0c2dc8b3fa52c 100644
 --- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
 +++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
-@@ -3432,9 +3432,15 @@ public abstract class LivingEntity extends Entity {
+@@ -3396,9 +3396,15 @@ public abstract class LivingEntity extends Entity implements Attackable {
  
      @Override
      public void stopRiding() {
@@ -114,10 +93,10 @@ index 2c804ef89d910f706c449b4ce540ed1be3ac242a..3ff18ddb1d4b36fcfd97c9b29f2ecdcb
              this.dismountVehicle(entity);
          }
 diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index 12904581bcf666c31ca6b02e5e0be2f5fe17de34..ba8b6d3fbc10eb9f02d3409eb2038827c47ca14d 100644
+index 9c12fc197c5367a35acda4155707c602f043e571..a7e0203cc4bf7d98b65230fdbc4d873eeabdf9da 100644
 --- a/src/main/java/net/minecraft/world/entity/player/Player.java
 +++ b/src/main/java/net/minecraft/world/entity/player/Player.java
-@@ -1142,7 +1142,13 @@ public abstract class Player extends LivingEntity {
+@@ -1147,7 +1147,13 @@ public abstract class Player extends LivingEntity {
  
      @Override
      public void removeVehicle() {
